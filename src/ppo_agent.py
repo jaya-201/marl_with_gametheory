@@ -1,12 +1,11 @@
+# PPO (Proximal Policy Optimization) is the brain of agent
+# connects environment with RL implementation
+
 import os
 from sb3_contrib import RecurrentPPO
 from src.config import MODEL_DIR, LOG_DIR
 
 class AirlinePPOAgent:
-    """
-    PPO Agent wrapper for AirlineMarketEnv
-    """
-
     def __init__(self, env, policy="MlpLstmPolicy", name="ppo_airline", load_path=None, verbose=1):
         self.env = env
         self.name = name

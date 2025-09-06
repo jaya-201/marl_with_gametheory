@@ -1,3 +1,5 @@
+# airlines pick a ticket price -> demand model decided how many passanger choose that airline -> each airline earsn reward (revenue)
+
 import gymnasium
 from gymnasium.spaces import Discrete, Box
 from pettingzoo import ParallelEnv

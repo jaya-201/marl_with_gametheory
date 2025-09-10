@@ -1,9 +1,10 @@
+# PPO is actor-critic model
 # PPO (Proximal Policy Optimization) is the brain of agent
 # connects environment with RL implementation
 
 import os
-from sb3_contrib import RecurrentPPO
-from src.config import MODEL_DIR, LOG_DIR
+from sb3_contrib import RecurrentPPO #for sequential dependencies (history matters)
+from src.config import MODEL_DIR, LOG_DIR 
 
 class AirlinePPOAgent:
     def __init__(self, env, policy="MlpLstmPolicy", name="ppo_airline", load_path=None, verbose=1):
@@ -47,3 +48,4 @@ class AirlinePPOAgent:
     def predict(self, observation, deterministic=True):
         action, _ = self.model.predict(observation, deterministic=deterministic)
         return action
+#this predict function above computes probablities of choosing each price point in the observation, picks the most likely and return that as action

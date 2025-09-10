@@ -9,6 +9,7 @@ import os
 from src.config import AGENTS, MAX_DAYS, PRICE_POINTS
 
 class AirlineMarketEnv(ParallelEnv):
+    #descriptive information about the environment (self-documentation)
     metadata = {"render_modes": ["human"], "name": "airline_market_v0"}
 
     def __init__(self, airlines=AGENTS, render_mode=None):
@@ -21,7 +22,7 @@ class AirlineMarketEnv(ParallelEnv):
         self.demand_models = {}
         for airline in self.agents:
             model_path = os.path.join('models', f'demand_model_{airline}.pkl')
-            self.demand_models[airline] = joblib.load(model_path)
+            self.demand_models[airline] = joblib.load(model_path) #Without this, agents couldn’t calculate passengers
 
         self.price_points = np.array(PRICE_POINTS, dtype=np.float32)
         self.obs_size = len(self.agents) + 1
@@ -38,7 +39,7 @@ class AirlineMarketEnv(ParallelEnv):
         self.current_prices = np.full(len(self.agents), 400.0, dtype=np.float32)
         observations = {agent: self._get_obs(agent) for agent in self.agents}
         infos = {agent: {} for agent in self.agents}
-        return observations, infos
+        return observations, infos #returns initial observation for each agent
 
     def _get_obs(self, agent):
         normalized_prices = self.current_prices / 1000.0
@@ -47,25 +48,21 @@ class AirlineMarketEnv(ParallelEnv):
         return obs
 
     def step(self, actions):
+        #converts each agent’s action into an actual ticket price
         prices = np.array([self.price_points[actions[agent]] for agent in self.agents])
         self.current_prices = prices.astype(np.float32)
 
-        # 2. Compute rewards
         rewards = {}
         for agent in self.agents:
             predicted_pax = self.demand_models[agent].predict(prices.reshape(1, -1))[0]
             predicted_pax = max(0, predicted_pax)
-            # Normalize reward
+            # Normalize reward -> stable PPO
             rewards[agent] = (prices[self.agent_to_idx[agent]] * predicted_pax) / 1000.0
 
-        # 3. Update state
         self.days_left -= 1
-
-        # 4. Check for termination
-        terminations = {agent: self.days_left <= 0 for agent in self.agents}
+        terminations = {agent: self.days_left <= 0 for agent in self.agents} #episode ends
         truncations = {agent: False for agent in self.agents}
 
-        # 5. Observations and infos
         observations = {agent: self._get_obs(agent) for agent in self.agents}
         infos = {agent: {} for agent in self.agents}
 
@@ -79,3 +76,7 @@ class AirlineMarketEnv(ParallelEnv):
         for agent in self.agents:
             price = self.current_prices[self.agent_to_idx[agent]]
             print(f"  - {agent}: Price = ${price:.2f}")
+
+
+#agent picks a price -> demand model predicts passangers for each airline -> 
+#reward = price*demand -> observations normalized -> episode continues until days_left=0

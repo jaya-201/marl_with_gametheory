@@ -16,7 +16,7 @@ def make_env():
     #compatibility with SuperSuit wrappers
     env = ss.pettingzoo_env_to_vec_env_v1(env)  # vectorize for SB3
     #PPO for multiagent but SB3 is single agent -> need for vectoried enviroment
-    env = ss.concat_vec_envs_v1(env, 1, num_cpus=1, base_class='stable_baselines3') # merges multiple copies of environment
+    env = ss.concat_vec_envs_v1(env, 1, num_cpus=1, base_class='stable_baselines3') #batching -> merges multiple copies of environment
     return env # Gym-compatible environment
 
 def train():
